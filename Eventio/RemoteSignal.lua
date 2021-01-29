@@ -11,14 +11,13 @@ local storage = script.Parent:WaitForChild("Storage"):WaitForChild("RemoteSignal
 
 function RemoteSignal.new(Data: string | RemoteEvent)
 	local t = typeof(Data)
-	assert((t == "string") or (t == "Instance" and game.IsA(Data, "RemoteEvent")), "[Eventio.RemoteSignal]: Passed wrong first argument into .new(Data: string | RemoteEvent). Got " .. t)
-	
+	assert((t == "string") or (t == "Instance" and game.IsA(Data, "RemoteEvent")), "Passed wrong first argument into .new(Data: string | RemoteEvent). Got " .. t)
+
 	local self = setmetatable({
 		_checkForPlayer = isServer,
 		_caller = isServer and "FireClient" or "FireServer",
-		_errSrc = "[Eventio.RemoteSignal]: "
 	}, RemoteSignal)
-	
+
 	if t == "Instance" then
 		self._object = Data
 	else
@@ -33,9 +32,9 @@ function RemoteSignal.new(Data: string | RemoteEvent)
 			end
 		end
 	end
-	
+
 	self._signal = isServer and self._object.OnServerEvent or self._object.OnClientEvent
-	
+
 	return self
 end
 
@@ -51,13 +50,13 @@ function RemoteSignal:FireAll(...): ()
 	if isServer then
 		self._object:FireAllClients(...)
 	else
-		error("[Eventio.RemoteSignal]: Tried using :FireAll(...) on a RemoteSignal from client.")
+		error("Tried using :FireAll(...) on a RemoteSignal from client.")
 	end
 end
 
 function RemoteSignal:FireExcept(ExceptionPlayer: Player, ...): ()
-	assert(typeof(ExceptionPlayer) == "Instance" and game.IsA(ExceptionPlayer, "Player"), "[Eventio.RemoteSignal]: Passed wrong first argument into :FireExcept(ExceptionPlayer: Player, ...). Got "..typeof(ExceptionPlayer))
-	
+	assert(typeof(ExceptionPlayer) == "Instance" and game.IsA(ExceptionPlayer, "Player"), "Passed wrong first argument into :FireExcept(ExceptionPlayer: Player, ...). Got "..typeof(ExceptionPlayer))
+
 	if isServer then
 		for _, plr in pairs(game:GetService("Players"):GetPlayers()) do
 			if plr ~= ExceptionPlayer then
@@ -65,7 +64,7 @@ function RemoteSignal:FireExcept(ExceptionPlayer: Player, ...): ()
 			end
 		end
 	else
-		error("[Eventio.RemoteSignal]: Tried using :FireExcept() on a RemoteSignal from client.")
+		error("Tried using :FireExcept() on a RemoteSignal from client.")
 	end
 end
 

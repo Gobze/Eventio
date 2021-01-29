@@ -10,14 +10,13 @@ local storage = script.Parent:WaitForChild("Storage"):WaitForChild("Invokes")
 
 function Invoke.new(Data: string | BindableFunction | nil)
 	local t = typeof(Data)
-	assert((t == "nil") or (t == "string") or (t == "Instance" and game.IsA(Data, "BindableFunction")), "[Eventio.Invoke]: Passed wrong first argument into .new(Data: string | BindableFunction | nil). Got " .. t)
-	
+	assert((t == "nil") or (t == "string") or (t == "Instance" and game.IsA(Data, "BindableFunction")), "Passed wrong first argument into .new(Data: string | BindableFunction | nil). Got " .. t)
+
 	local self = setmetatable({
 		_invoker = "Invoke",
-		_callback = "OnInvoke",
-		_errSrc = "[Eventio.Invoke]: "
+		_callback = "OnInvoke"
 	}, Invoke)
-	
+
 	if t == "Instance" then
 		self._object = Data
 	elseif t == "nil" then
@@ -30,7 +29,7 @@ function Invoke.new(Data: string | BindableFunction | nil)
 			self._object.Name = Data
 		end
 	end
-	
+
 	return self
 end
 

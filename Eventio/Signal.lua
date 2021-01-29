@@ -10,13 +10,12 @@ local storage = script.Parent:WaitForChild("Storage"):WaitForChild("Signals")
 
 function Signal.new(Data: string | BindableEvent | nil)
 	local t = typeof(Data)
-	assert((t == "nil") or (t == "string") or (t == "Instance" and game.IsA(Data, "BindableEvent")), "[Eventio.Signal]: Passed wrong first argument into .new(Data: string | BindableEvent | nil). Got " .. t)
-	
+	assert((t == "nil") or (t == "string") or (t == "Instance" and game.IsA(Data, "BindableEvent")), "Passed wrong first argument into .new(Data: string | BindableEvent | nil). Got " .. t)
+
 	local self = setmetatable({
-		_caller = "Fire",
-		_errSrc = "[Eventio.Signal]: "
+		_caller = "Fire"
 	}, Signal)
-	
+
 	if t == "Instance" then
 		self._object = Data
 	elseif t == "nil" then
@@ -29,12 +28,12 @@ function Signal.new(Data: string | BindableEvent | nil)
 			self._object.Name = Data
 		end
 	end
-	
+
 	self._signal = self._object.Event
-	
+
 	return self
 end
-	
+
 --// Type checker
 
 function Signal.Is(Anything: any): boolean

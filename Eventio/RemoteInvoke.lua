@@ -11,15 +11,14 @@ local storage = script.Parent:WaitForChild("Storage"):WaitForChild("RemoteInvoke
 
 function RemoteInvoke.new(Data: string | RemoteFunction)
 	local t = typeof(Data)
-	assert((t == "string") or (t == "Instance" and game.IsA(Data, "RemoteFunction")), "[Eventio.RemoteInvoke]: Passed wrong first argument into .new(Data: string | RemoteFunction). Got " .. t)
-	
+	assert((t == "string") or (t == "Instance" and game.IsA(Data, "RemoteFunction")), "Passed wrong first argument into .new(Data: string | RemoteFunction). Got " .. t)
+
 	local self = setmetatable({
 		_checkForPlayer = isServer,
 		_invoker = isServer and "InvokeClient" or "InvokeServer",
 		_callback = isServer and "OnServerInvoke" or "OnClientInvoke",
-		_errSrc = "[Eventio.RemoteInvoke]: "
 	}, RemoteInvoke)
-	
+
 	if t == "Instance" then
 		self._object = Data
 	else
@@ -34,7 +33,7 @@ function RemoteInvoke.new(Data: string | RemoteFunction)
 			end
 		end
 	end
-	
+
 	return self
 end
 
