@@ -1,4 +1,4 @@
---// Eventio
+--// Eventio [1.0]
 --// Event management library
 --// By Gobzen
 
@@ -20,7 +20,6 @@
 	local mySignal = Eventio.RemoteSignal.new("mySignal")
 
 	mySignal:Fire("hi!") --> hi!
-
 ]]
 
 local Eventio = {}
@@ -34,7 +33,7 @@ if isServer and (not script:FindFirstChild("Storage")) then --// Create storage
 
 	for _, name in pairs({"Signals", "RemoteSignals", "Invokes", "RemoteInvokes"}) do
 		local Folder = Instance.new("Folder")
-		Folder.Parent = script
+		Folder.Parent = Storage
 		Folder.Name = name
 	end
 end

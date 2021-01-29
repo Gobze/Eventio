@@ -5,29 +5,50 @@ BaseSignal.__index = BaseSignal
 
 function BaseSignal:Fire(Player, ...): ()
 	if self._checkForPlayer then
-		assert(typeof(Player) == "Instance" and game.IsA(Player, "Player"), self._errSrc .. "Passed wrong first argument into :Fire(Player: Player, ...). Got " .. typeof(Player))
+		assert(typeof(Player) == "Instance" and game.IsA(Player, "Player"), "Passed wrong first argument into :Fire(Player: Player, ...). Got " .. typeof(Player))
 	end
-	
+
 	self._object[self._caller](self._object, Player, ...)
 end
 
-function BaseSignal:Connect(Callback): ()
-	assert(typeof(Callback) == "function", self._errSrc .. "Passed wrong first argument into :Connect(Callback: (...) -> void). Got " .. typeof(Callback))
+function BaseSignal:Connect(Callback): RBXScriptConnection
+	assert(typeof(Callback) == "function", "Passed wrong first argument into :Connect(Callback: (...) -> void) -> RBXScriptConnection. Got " .. typeof(Callback))
 
 	return self._signal:Connect(Callback)
+end
+
+function BaseSignal:ConnectCall(Callback, ...): RBXScriptConnection
+	assert(typeof(Callback) == "function", "Passed wrong first argument into :ConnectCall(Callback: (...Args) -> void, ...Args) -> RBXScriptConnection. Got " .. typeof(Callback))
+	local args = {...}
+
+	return self._signal:Connect(function()
+		return Callback(unpack(args))
+	end)
 end
 
 function BaseSignal:Wait()
 	return self._signal:Wait()
 end
 
-function BaseSignal:Once(Callback): ()
-	assert(typeof(Callback) == "function", self._errSrc .. "Passed wrong first argument into :Connect(Callback: (...) -> void). Got " .. typeof(Callback))
-	
+function BaseSignal:Once(Callback): RBXScriptConnection
+	assert(typeof(Callback) == "function", "Passed wrong first argument into :Once(Callback: (...) -> void) -> RBXScriptConnection. Got " .. typeof(Callback))
+
 	local connection
 	connection = self._signal:Connect(function(...)
 		connection:Disconnect()
 		Callback(...)
+	end)
+	return connection
+end
+
+function BaseSignal:OnceCall(Callback, ...): RBXScriptConnection
+	assert(typeof(Callback) == "function", "Passed wrong first argument into :OnceCall(Callback: (...Args) -> void, ...Args) -> RBXScriptConnection. Got " .. typeof(Callback))
+	local args = {...}
+
+	local connection
+	connection = self._signal:Connect(function()
+		connection:Disconnect()
+		Callback(unpack(args))
 	end)
 	return connection
 end
