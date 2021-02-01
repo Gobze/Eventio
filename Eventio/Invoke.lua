@@ -3,6 +3,7 @@
 local BaseInvoke = require(script.Parent:WaitForChild("Bases"):WaitForChild("BaseInvoke"))
 local Invoke = setmetatable({}, BaseInvoke)
 Invoke.__index = Invoke
+Invoke.ClassName = "Invoke"
 
 local storage = script.Parent:WaitForChild("Storage"):WaitForChild("Invokes")
 
@@ -37,6 +38,12 @@ end
 
 function Invoke.Is(Anything: any): boolean
 	return typeof(Anything) == "table" and getmetatable(Anything) == Invoke
+end
+
+--// For debugging
+
+function Invoke:__tostring()
+	return self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "")
 end
 
 --// Export module

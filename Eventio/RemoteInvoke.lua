@@ -3,6 +3,7 @@
 local BaseInvoke = require(script.Parent:WaitForChild("Bases"):WaitForChild("BaseInvoke"))
 local RemoteInvoke = setmetatable({}, BaseInvoke)
 RemoteInvoke.__index = RemoteInvoke
+RemoteInvoke.ClassName = "RemoteInvoke"
 
 local isServer = game:GetService("RunService"):IsServer()
 local storage = script.Parent:WaitForChild("Storage"):WaitForChild("RemoteInvokes")
@@ -14,7 +15,7 @@ function RemoteInvoke.new(Data: string | RemoteFunction)
 	assert((t == "string") or (t == "Instance" and game.IsA(Data, "RemoteFunction")), "Passed wrong first argument into .new(Data: string | RemoteFunction). Got " .. t)
 
 	local self = setmetatable({
-		_checkForPlayer = isServer,
+		_assertPlrArg = isServer,
 		_invoker = isServer and "InvokeClient" or "InvokeServer",
 		_callback = isServer and "OnServerInvoke" or "OnClientInvoke",
 	}, RemoteInvoke)
@@ -41,6 +42,12 @@ end
 
 function RemoteInvoke.Is(Anything: any): boolean
 	return typeof(Anything) == "table" and getmetatable(Anything) == RemoteInvoke
+end
+
+--// For debugging
+
+function RemoteInvoke:__tostring()
+	return self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "")
 end
 
 --// Export module

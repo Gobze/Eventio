@@ -3,6 +3,7 @@
 local BaseSignal = require(script.Parent:WaitForChild("Bases"):WaitForChild("BaseSignal"))
 local RemoteSignal = setmetatable({}, BaseSignal)
 RemoteSignal.__index = RemoteSignal
+RemoteSignal.ClassName = "RemoteSignal"
 
 local isServer = game:GetService("RunService"):IsServer()
 local storage = script.Parent:WaitForChild("Storage"):WaitForChild("RemoteSignals")
@@ -14,8 +15,10 @@ function RemoteSignal.new(Data: string | RemoteEvent)
 	assert((t == "string") or (t == "Instance" and game.IsA(Data, "RemoteEvent")), "Passed wrong first argument into .new(Data: string | RemoteEvent). Got " .. t)
 
 	local self = setmetatable({
-		_checkForPlayer = isServer,
+		Connections = {},
+		_assertPlrArg = isServer,
 		_caller = isServer and "FireClient" or "FireServer",
+		_signal = isServer and "OnServerEvent" or "OnClientEvent"
 	}, RemoteSignal)
 
 	if t == "Instance" then
@@ -33,8 +36,6 @@ function RemoteSignal.new(Data: string | RemoteEvent)
 		end
 	end
 
-	self._signal = isServer and self._object.OnServerEvent or self._object.OnClientEvent
-
 	return self
 end
 
@@ -47,6 +48,7 @@ end
 --// Unique Methods
 
 function RemoteSignal:FireAll(...): ()
+	assert(self._object.Parent, "Instance associated with the " .. self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "") .. " was destroyed!")
 	if isServer then
 		self._object:FireAllClients(...)
 	else
@@ -55,6 +57,7 @@ function RemoteSignal:FireAll(...): ()
 end
 
 function RemoteSignal:FireExcept(ExceptionPlayer: Player, ...): ()
+	assert(self._object.Parent, "Instance associated with the " .. self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "") .. " was destroyed!")
 	assert(typeof(ExceptionPlayer) == "Instance" and game.IsA(ExceptionPlayer, "Player"), "Passed wrong first argument into :FireExcept(ExceptionPlayer: Player, ...). Got "..typeof(ExceptionPlayer))
 
 	if isServer then
@@ -66,6 +69,12 @@ function RemoteSignal:FireExcept(ExceptionPlayer: Player, ...): ()
 	else
 		error("Tried using :FireExcept() on a RemoteSignal from client.")
 	end
+end
+
+--// For debugging
+
+function RemoteSignal:__tostring()
+	return self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "")
 end
 
 --// Export module
