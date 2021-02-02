@@ -16,7 +16,7 @@ function RemoteSignal.new(Data: string | RemoteEvent)
 	assert((t == "string") or (t == "Instance" and game.IsA(Data, "RemoteEvent")), "Passed wrong first argument into .new(Data: string | RemoteEvent) -> RemoteSignal. Got " .. t)
 
 	local self = setmetatable({
-		Connections = {},
+		_connections = {},
 		_assertPlrArg = IsServer,
 		_caller = IsServer and "FireClient" or "FireServer",
 		_signal = IsServer and "OnServerEvent" or "OnClientEvent"
@@ -49,6 +49,7 @@ end
 --// Unique Methods
 
 function RemoteSignal:FireAll(...): ()
+	assert(RemoteSignal.Is(self), ":FireAll(...) -> void must be used on a RemoteSignal using :")
 	assert(IsServer, "Tried using :FireAll(...) -> void on a RemoteSignal from client.")
 	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 
@@ -56,6 +57,7 @@ function RemoteSignal:FireAll(...): ()
 end
 
 function RemoteSignal:FireExcept(ExceptionPlayer: Player, ...): ()
+	assert(RemoteSignal.Is(self), ":FireExcept(ExceptionPlayer: Player, ...) -> void must be used on a RemoteSignal using :")
 	assert(IsServer, "Tried using :FireExcept(ExceptionPlayer: Player, ...) -> void on a RemoteSignal from client.")
 	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 	assert(typeof(ExceptionPlayer) == "Instance" and game.IsA(ExceptionPlayer, "Player"), "Passed wrong first argument into :FireExcept(ExceptionPlayer: Player, ...) -> void. Got "..typeof(ExceptionPlayer))
@@ -68,6 +70,7 @@ function RemoteSignal:FireExcept(ExceptionPlayer: Player, ...): ()
 end
 
 function RemoteSignal:FireChosen(ChosenPlayers: {Player}, ...): ()
+	assert(RemoteSignal.Is(self), ":FireChosen(ChosenPlayers: {Player}, ...) -> void must be used on a RemoteSignal using :")
 	assert(IsServer, "Tried using :FireChosen(ChosenPlayers: {Player}, ...) -> void on a RemoteSignal from client.")
 	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 	assert(typeof(ChosenPlayers) == "table" and (typeof(ChosenPlayers[1]) == "Instance" and game.IsA(ChosenPlayers[1], "Player")), "Passed wrong first argument into :FireChosen(ChosenPlayers: {Player}, ...) -> void. Got "..typeof(ChosenPlayers))
