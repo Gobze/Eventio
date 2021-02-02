@@ -48,6 +48,7 @@ end
 --// Methods
 
 function RemoteInvoke:InvokeAll(...)
+	assert(RemoteInvoke.Is(self), ":InvokeAll(...) -> {Player: Promise} must be used on a RemoteInvoke using :")
 	assert(IsServer, "Tried using :InvokeAll(...) -> {Player: Promise} on a RemoteInvoke from client.")
 	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 
@@ -59,6 +60,7 @@ function RemoteInvoke:InvokeAll(...)
 end
 
 function RemoteInvoke:InvokeExcept(ExceptionPlayer: Player, ...)
+	assert(RemoteInvoke.Is(self), ":InvokeExcept(ExceptionPlayer: Player, ...) -> {Player: Promise} must be used on a RemoteInvoke using :")
 	assert(IsServer, "Tried using :InvokeExcept(ExceptionPlayer: Player, ...) -> {Player: Promise} on a RemoteInvoke from client.")
 	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 	assert(typeof(ExceptionPlayer) == "Instance" and game.IsA(ExceptionPlayer, "Player"), "Passed wrong first argument into :InvokeExcept(ExceptionPlayer: Player, ...) -> {Player: Promise}. Got "..typeof(ExceptionPlayer))
@@ -73,6 +75,7 @@ function RemoteInvoke:InvokeExcept(ExceptionPlayer: Player, ...)
 end
 
 function RemoteInvoke:InvokeChosen(ChosenPlayers: {Player}, ...)
+	assert(RemoteInvoke.Is(self), ":InvokeChosen(ChosenPlayers: {Player}, ...) -> {Player: Promise} must be used on a RemoteInvoke using :")
 	assert(IsServer, "Tried using :InvokeChosen(ChosenPlayers: {Player}, ...) -> {Player: Promise} on a RemoteInvoke from client.")
 	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 	assert(typeof(ChosenPlayers) == "table" and (typeof(ChosenPlayers[1]) == "Instance" and game.IsA(ChosenPlayers[1], "Player")), "Passed wrong first argument into :InvokeChosen(ChosenPlayers: {Player}, ...) -> {Player: Promise}. Got "..typeof(ChosenPlayers))
