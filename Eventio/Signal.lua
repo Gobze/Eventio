@@ -14,7 +14,7 @@ function Signal.new(Data: string | BindableEvent | nil)
 	assert((t == "nil") or (t == "string") or (t == "Instance" and game.IsA(Data, "BindableEvent")), "Passed wrong first argument into .new(Data: string | BindableEvent | nil). Got " .. t)
 
 	local self = setmetatable({
-		Connections = {},
+		_connections = {},
 		_caller = "Fire",
 		_signal = "Event"
 	}, Signal)
