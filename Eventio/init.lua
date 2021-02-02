@@ -24,6 +24,19 @@
 
 local Eventio = {}
 
+local Storage = script:FindFirstChild("Storage")
+if (not Storage) and (game:GetService("RunService"):IsServer()) then
+	Storage = Instance.new("Folder")
+	Storage.Parent = script
+	Storage.Name = "Storage"
+
+	for _, name in pairs {"Signals", "RemoteSignals", "Invokes", "RemoteInvokes"} do
+		local Folder = Instance.new("Folder")
+		Folder.Parent = Storage
+		Folder.Name = name
+	end
+end
+
 Eventio.Signal = require(script.Signal) --// BindableEvent
 Eventio.RemoteSignal = require(script.RemoteSignal) --// RemoteEvent
 Eventio.Invoke = require(script.Invoke) --// BindableFunction

@@ -5,8 +5,9 @@ local RemoteInvoke = setmetatable({}, BaseInvoke)
 RemoteInvoke.__index = RemoteInvoke
 RemoteInvoke.ClassName = "RemoteInvoke"
 
-local isServer = game:GetService("RunService"):IsServer()
-local storage = script.Parent:WaitForChild("Storage"):WaitForChild("RemoteInvokes")
+local Players = game:GetService("Players")
+local IsServer = game:GetService("RunService"):IsServer()
+local Storage = script.Parent:WaitForChild("Storage"):WaitForChild("RemoteInvokes")
 
 --// Constructor
 
@@ -15,22 +16,22 @@ function RemoteInvoke.new(Data: string | RemoteFunction)
 	assert((t == "string") or (t == "Instance" and game.IsA(Data, "RemoteFunction")), "Passed wrong first argument into .new(Data: string | RemoteFunction). Got " .. t)
 
 	local self = setmetatable({
-		_assertPlrArg = isServer,
-		_invoker = isServer and "InvokeClient" or "InvokeServer",
-		_callback = isServer and "OnServerInvoke" or "OnClientInvoke",
+		_assertPlrArg = IsServer,
+		_invoker = IsServer and "InvokeClient" or "InvokeServer",
+		_callback = IsServer and "OnServerInvoke" or "OnClientInvoke",
 	}, RemoteInvoke)
 
 	if t == "Instance" then
 		self._object = Data
 	else
 		self.Name = Data
-		self._object = storage:FindFirstChild(Data)
+		self._object = Storage:FindFirstChild(Data)
 		if not self._object then
-			if isServer then
-				self._object = Instance.new("RemoteFunction", storage)
+			if IsServer then
+				self._object = Instance.new("RemoteFunction", Storage)
 				self._object.Name = Data
 			else
-				self._object = storage:WaitForChild(Data) --// Client waits for the object to be made on server
+				self._object = Storage:WaitForChild(Data) --// Client waits for the object to be made on server
 			end
 		end
 	end
@@ -42,6 +43,45 @@ end
 
 function RemoteInvoke.Is(Anything: any): boolean
 	return typeof(Anything) == "table" and getmetatable(Anything) == RemoteInvoke
+end
+
+--// Methods
+
+function RemoteInvoke:InvokeAll(...)
+	assert(IsServer, "Tried using :InvokeAll(...) -> {Player: Promise} on a RemoteInvoke from client.")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
+
+	local promises = {}
+	for _, plr in pairs(Players:GetPlayers()) do
+		promises[plr] = self:Invoke(plr, ...)
+	end
+	return promises
+end
+
+function RemoteInvoke:InvokeExcept(ExceptionPlayer: Player, ...)
+	assert(IsServer, "Tried using :InvokeExcept(ExceptionPlayer: Player, ...) -> {Player: Promise} on a RemoteInvoke from client.")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
+	assert(typeof(ExceptionPlayer) == "Instance" and game.IsA(ExceptionPlayer, "Player"), "Passed wrong first argument into :InvokeExcept(ExceptionPlayer: Player, ...) -> {Player: Promise}. Got "..typeof(ExceptionPlayer))
+
+	local promises = {}
+	for _, plr in pairs(Players:GetPlayers()) do
+		if plr ~= ExceptionPlayer then
+			promises[plr] = self:Invoke(plr, ...)
+		end
+	end
+	return promises
+end
+
+function RemoteInvoke:InvokeChosen(ChosenPlayers: {Player}, ...)
+	assert(IsServer, "Tried using :InvokeChosen(ChosenPlayers: {Player}, ...) -> {Player: Promise} on a RemoteInvoke from client.")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
+	assert(typeof(ChosenPlayers) == "table" and (typeof(ChosenPlayers[1]) == "Instance" and game.IsA(ChosenPlayers[1], "Player")), "Passed wrong first argument into :InvokeChosen(ChosenPlayers: {Player}, ...) -> {Player: Promise}. Got "..typeof(ChosenPlayers))
+
+	local promises = {}
+	for _, plr in pairs(ChosenPlayers) do
+		promises[plr] = self:Invoke(plr, ...)
+	end
+	return promises
 end
 
 --// For debugging

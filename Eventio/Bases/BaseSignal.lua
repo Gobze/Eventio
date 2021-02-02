@@ -4,7 +4,7 @@ local BaseSignal = {}
 BaseSignal.__index = BaseSignal
 
 function BaseSignal:Fire(Player, ...): ()
-	assert(self._object and self._object.Parent, self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "") .. " was destroyed!")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 	if self._assertPlrArg then
 		assert(typeof(Player) == "Instance" and game.IsA(Player, "Player"), "Passed wrong first argument into :Fire(Player: Player, ...). Got " .. typeof(Player))
 	end
@@ -13,7 +13,7 @@ function BaseSignal:Fire(Player, ...): ()
 end
 
 function BaseSignal:Connect(Callback): RBXScriptConnection
-	assert(self._object and self._object.Parent, self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "") .. " was destroyed!")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 	assert(typeof(Callback) == "function", "Passed wrong first argument into :Connect(Callback: (...) -> void) -> RBXScriptConnection. Got " .. typeof(Callback))
 
 	local connection = self._object[self._signal]:Connect(Callback)
@@ -22,7 +22,7 @@ function BaseSignal:Connect(Callback): RBXScriptConnection
 end
 
 function BaseSignal:ConnectCall(Callback, ...): RBXScriptConnection
-	assert(self._object and self._object.Parent, self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "") .. " was destroyed!")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 	assert(typeof(Callback) == "function", "Passed wrong first argument into :ConnectCall(Callback: (...Args) -> void, ...Args) -> RBXScriptConnection. Got " .. typeof(Callback))
 	local args = {...}
 
@@ -34,12 +34,12 @@ function BaseSignal:ConnectCall(Callback, ...): RBXScriptConnection
 end
 
 function BaseSignal:Wait()
-	assert(self._object and self._object.Parent, self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "") .. " was destroyed!")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 	return self._object[self._signal]:Wait()
 end
 
 function BaseSignal:Once(Callback): RBXScriptConnection
-	assert(self._object and self._object.Parent, self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "") .. " was destroyed!")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 	assert(typeof(Callback) == "function", "Passed wrong first argument into :Once(Callback: (...) -> void) -> RBXScriptConnection. Got " .. typeof(Callback))
 
 	local connection
@@ -52,7 +52,7 @@ function BaseSignal:Once(Callback): RBXScriptConnection
 end
 
 function BaseSignal:OnceCall(Callback, ...): RBXScriptConnection
-	assert(self._object and self._object.Parent, self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "") .. " was destroyed!")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
 	assert(typeof(Callback) == "function", "Passed wrong first argument into :OnceCall(Callback: (...Args) -> void, ...Args) -> RBXScriptConnection. Got " .. typeof(Callback))
 	local args = {...}
 
@@ -75,12 +75,9 @@ function BaseSignal:DisconnectAll(): () --// Disconnects all the connections gat
 end
 
 function BaseSignal:Destroy(): () --// Destroys the instance associated with the signal, blocks the usage of all signals connected to the destroyed bindablevent
-	assert(self._object and self._object.Parent, self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "") .. " was already destroyed!")
+	assert(self._object and self._object.Parent, tostring(self) .. " was already destroyed!")
 	self._object:Destroy()
-
-	for index in pairs(self.Connections) do
-		table.remove(self.Connections, index)
-	end
+	self:DisconnectAll() --// Wipe out the Connections table
 end
 
 function BaseSignal:__call(...) --// Allows to create signals like Eventio.Signal()

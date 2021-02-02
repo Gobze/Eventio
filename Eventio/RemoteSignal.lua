@@ -5,33 +5,34 @@ local RemoteSignal = setmetatable({}, BaseSignal)
 RemoteSignal.__index = RemoteSignal
 RemoteSignal.ClassName = "RemoteSignal"
 
-local isServer = game:GetService("RunService"):IsServer()
-local storage = script.Parent:WaitForChild("Storage"):WaitForChild("RemoteSignals")
+local IsServer = game:GetService("RunService"):IsServer()
+local Storage = script.Parent:WaitForChild("Storage"):WaitForChild("RemoteSignals")
+local Players = game:GetService("Players")
 
 --/ Constructor
 
 function RemoteSignal.new(Data: string | RemoteEvent)
 	local t = typeof(Data)
-	assert((t == "string") or (t == "Instance" and game.IsA(Data, "RemoteEvent")), "Passed wrong first argument into .new(Data: string | RemoteEvent). Got " .. t)
+	assert((t == "string") or (t == "Instance" and game.IsA(Data, "RemoteEvent")), "Passed wrong first argument into .new(Data: string | RemoteEvent) -> RemoteSignal. Got " .. t)
 
 	local self = setmetatable({
 		Connections = {},
-		_assertPlrArg = isServer,
-		_caller = isServer and "FireClient" or "FireServer",
-		_signal = isServer and "OnServerEvent" or "OnClientEvent"
+		_assertPlrArg = IsServer,
+		_caller = IsServer and "FireClient" or "FireServer",
+		_signal = IsServer and "OnServerEvent" or "OnClientEvent"
 	}, RemoteSignal)
 
 	if t == "Instance" then
 		self._object = Data
 	else
 		self.Name = Data
-		self._object = storage:FindFirstChild(Data)
+		self._object = Storage:FindFirstChild(Data)
 		if not self._object then
-			if isServer then
-				self._object = Instance.new("RemoteEvent", storage)
+			if IsServer then
+				self._object = Instance.new("RemoteEvent", Storage)
 				self._object.Name = Data
 			else
-				self._object = storage:WaitForChild(Data) --// Client waits for the object to be made on server
+				self._object = Storage:WaitForChild(Data) --// Client waits for the object to be made on server
 			end
 		end
 	end
@@ -48,26 +49,31 @@ end
 --// Unique Methods
 
 function RemoteSignal:FireAll(...): ()
-	assert(self._object.Parent, "Instance associated with the " .. self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "") .. " was destroyed!")
-	if isServer then
-		self._object:FireAllClients(...)
-	else
-		error("Tried using :FireAll(...) on a RemoteSignal from client.")
-	end
+	assert(IsServer, "Tried using :FireAll(...) -> void on a RemoteSignal from client.")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
+
+	self._object:FireAllClients(...)
 end
 
 function RemoteSignal:FireExcept(ExceptionPlayer: Player, ...): ()
-	assert(self._object.Parent, "Instance associated with the " .. self.ClassName .. (self.Name and "(" .. self.Name .. ")" or "") .. " was destroyed!")
-	assert(typeof(ExceptionPlayer) == "Instance" and game.IsA(ExceptionPlayer, "Player"), "Passed wrong first argument into :FireExcept(ExceptionPlayer: Player, ...). Got "..typeof(ExceptionPlayer))
+	assert(IsServer, "Tried using :FireExcept(ExceptionPlayer: Player, ...) -> void on a RemoteSignal from client.")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
+	assert(typeof(ExceptionPlayer) == "Instance" and game.IsA(ExceptionPlayer, "Player"), "Passed wrong first argument into :FireExcept(ExceptionPlayer: Player, ...) -> void. Got "..typeof(ExceptionPlayer))
 
-	if isServer then
-		for _, plr in pairs(game:GetService("Players"):GetPlayers()) do
-			if plr ~= ExceptionPlayer then
-				self._object:FireClient(plr, ...)
-			end
+	for _, plr in pairs(Players:GetPlayers()) do
+		if plr ~= ExceptionPlayer then
+			self._object:FireClient(plr, ...)
 		end
-	else
-		error("Tried using :FireExcept() on a RemoteSignal from client.")
+	end
+end
+
+function RemoteSignal:FireChosen(ChosenPlayers: {Player}, ...): ()
+	assert(IsServer, "Tried using :FireChosen(ChosenPlayers: {Player}, ...) -> void on a RemoteSignal from client.")
+	assert(self._object and self._object.Parent, tostring(self) .. " was destroyed!")
+	assert(typeof(ChosenPlayers) == "table" and (typeof(ChosenPlayers[1]) == "Instance" and game.IsA(ChosenPlayers[1], "Player")), "Passed wrong first argument into :FireChosen(ChosenPlayers: {Player}, ...) -> void. Got "..typeof(ChosenPlayers))
+
+	for _, plr in pairs(ChosenPlayers) do
+		self._object:FireClient(plr, ...)
 	end
 end
 
